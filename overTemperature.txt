@@ -1,0 +1,98 @@
+# overTemperatureHandler
+# sensor order (index -> meaning):
+# 0:DFE, 1:AFE, 2:BOARD, 3:FPA, 4:DPA, 5:TX, 6:TOR, 7:RX(Not participating)
+
+## Per-channel sensor association mask (1 = associated, 0 = not associated), 
+/overTemp/channel0        0, 0, 1, 0, 0, 1, 0, 0
+/overTemp/channel1        0, 0, 0, 0, 0, 0, 0, 0
+/overTemp/channel2        0, 0, 0, 0, 0, 0, 0, 0
+/overTemp/channel3        0, 0, 0, 0, 0, 0, 0, 0
+/overTemp/channel4        0, 0, 0, 0, 0, 0, 0, 0
+/overTemp/channel5        0, 0, 0, 0, 0, 0, 0, 0
+/overTemp/channel6        0, 0, 0, 0, 0, 0, 0, 0
+/overTemp/channel7        0, 0, 0, 0, 0, 0, 0, 0
+
+## Per-sensor thresholds
+## Units: ETH/NTH/HOT in 0.1°C, IHO_MAX in (°C*minute)
+/overTemp/sensors/NTH                 750, 700, 370, 800, 750, 700, 700, 0
+/overTemp/sensors/HOT                 850, 800, 400, 900, 850, 800, 800, 0
+/overTemp/sensors/ETH                 950, 900, 500, 1000, 950, 900, 900, 0
+/overTemp/sensors/IHO_MAX             40.0, 40.0, 20.0, 80.0, 60.0, 50.0, 40.0, 0.0
+
+## Global configuration
+## Tdelta in minutes, dynamicBackoffPeriod in seconds
+## maxAttenuation/stepSize/maxAttenuationExtra in 0.1 dB
+/overTemp/global/Tdelta                       5.0              # minutes
+/overTemp/global/dynamicBackoffPeriod         5                # seconds
+/overTemp/global/maxAttenuation               30               # 0.1dB
+/overTemp/global/stepSize                     5
+/overTemp/global/TREC_MIN                     12.0             # minutes
+/overTemp/global/hysteresis_count             3  
+/overTemp/global/tmax                         6.0              # minutes
+/overTemp/global/tempExtra                    5.0              # ℃
+/overTemp/global/maxAttenuationExtra          10               # 0.1dB
+
+
+
+## ============================================================================
+## 方案一：扩展传感器类型枚举
+## ============================================================================
+# 
+# 原理：在现有8种传感器类型基础上，直接扩展枚举定义多个传感器类型实例
+# 
+# 枚举扩展后的传感器索引：
+# 0:DFE, 1:AFE, 2:BOARD, 3:FPA, 
+# 4:DPA_0, 5:DPA_1, 6:DPA_2,        
+# 7:TX, 8:TOR, 9:RX                  
+#
+# 示例：
+
+# 数组变长
+#/overTemp/channel0        0, 0, 1, 0, 0, 1, 0, 1, 0, 0    # 板温(2) + DPA_1(5) + TX(7)  
+#/overTemp/channel1        0, 0, 1, 0, 1, 0, 0, 0, 0, 0    # 板温(2) + DPA_0(4)
+#/overTemp/channel4        0, 0, 1, 0, 0, 0, 1, 1, 0, 0    # 板温(2) + DPA_2(6) + TX(7)
+
+# 阈值配置也需要扩展
+#/overTemp/sensors/NTH     750, 700, 370, 800, 750, 720, 740, 700, 700, 0
+#/overTemp/sensors/HOT     850, 800, 400, 900, 850, 820, 840, 800, 800, 0  
+#/overTemp/sensors/ETH     950, 900, 500, 1000, 950, 920, 940, 900, 900, 0
+#/overTemp/sensors/IHO_MAX 40.0, 40.0, 20.0, 80.0, 60.0, 55.0, 65.0, 50.0, 40.0, 0.0
+
+
+
+
+
+
+
+
+
+## ============================================================================  
+## 方案二：基于通道的独立配置路径
+## ============================================================================
+#
+# 保持现有8种传感器类型配置不变，为每个通道单独配置其传感器实例
+#
+原有通道配置保持完全不变
+# /overTemp/channel0        0, 0, 1, 0, 1, 1, 0, 0    # 仍然是：板温(2) + DPA(4) + TX(5)
+# /overTemp/channel1        0, 0, 1, 0, 1, 0, 0, 0    # 仍然是：板温(2) + DPA(4)  
+# /overTemp/channel4        0, 0, 1, 0, 1, 1, 0, 0    # 仍然是：板温(2) + DPA(4) + TX(5)
+
+# 方案二：新增通道级传感器实例映射配置
+#/overTemp/instances/channel0/DPA        1               # 通道0的DPA使用实例1
+#/overTemp/instances/channel1/DPA        0               # 通道1的DPA使用实例0
+#/overTemp/instances/channel4/DPA        2               # 通道4的DPA使用实例2
+
+# 方案二：实例特定阈值配置（可选，如果所有实例阈值相同则不需要）
+#/overTemp/instanceThresholds/DPA0/NTH      750         # DPA实例0的NTH阈值
+#/overTemp/instanceThresholds/DPA1/NTH      720         # DPA实例1的NTH阈值  
+#/overTemp/instanceThresholds/DPA2/NTH      740         # DPA实例2的NTH阈值
+
+
+
+
+
+
+
+
+
+
