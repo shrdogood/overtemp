@@ -1,4 +1,4 @@
-#include "cmdRegister.h"
+#include "dis_dfe8219_board.h"
 #include "rtcDriver.h"
 
 
@@ -42,5 +42,5 @@ void rtcCmd(int argc, char *argv[])
 void rtcCmdInit()
 {
     cmd_t rtc_cmds = {"rtc", rtcCmd};
-    register_cmds(&rtc_cmds, 1);
+    dis_dfe8219_register_cmds(&rtc_cmds, 1);
 }

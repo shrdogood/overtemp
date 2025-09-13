@@ -1,7 +1,6 @@
 #ifndef __RTC_DRIVER_H__
 #define __RTC_DRIVER_H__
 
-#include <linux/rtc.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -12,6 +11,8 @@
 #include <poll.h>
 #include <signal.h>
 #include <pthread.h>
+#include <linux/rtc.h>
+#include "dis_dfe8219_board.h"
 
 /* ========================= Macro Definitions ========================= */
 #define RTC_0 "/dev/rtc0"
@@ -55,8 +56,6 @@ typedef struct {
 
 /* ========================= Function Declarations ========================= */
 
-/* ------------- Initialization and Cleanup Functions ------------- */
-
 /**
  * @brief Initialize RTC devices
  *
@@ -98,7 +97,6 @@ int rtc_enable_irq(int rtc_num);
  */
 int rtc_disable_irq(int rtc_num);
 
-/* ------------- Service Management Functions ------------- */
 
 /**
  * @brief Register a timer service
@@ -127,23 +125,21 @@ int rtc_register_service(int timer_id, const char *name, int interval, void (*ca
  */
 int rtc_unregister_service(int timer_id, const char *name);
 
-/* ------------- Query and Status Functions ------------- */
-
-/**
- * @brief Get the number of registered services on the specified timer
- *
- * @param timer_id Timer index (0 or 1)
- * @return int Number of registered services, -1 indicates invalid parameters
- */
-int rtc_get_service_count(int timer_id);
-
-/**
- * @brief Check if RTC devices are initialized
- *
- * @return int Initialization status
- *         - 1: Initialized
- *         - 0: Not initialized
- */
-int rtc_is_initialized(void);
+struct elog_mtd_t{
+    struct {
+            const char *name;
+            int fd;
+            mtd_info_t mi;
+    } dev;
+    struct {
+            off_t w;
+            off_t e;
+            off_t r;
+    } head;
+    uint32_t seq_number;
+    int (*read)(void *buf, size_t size, off_t offset);
+    int (*write)(const void *buf, size_t size, off_t offset);
+    int (*erase)(off_t eb_offs);
+};
 
 #endif /* __RTC_DRIVER_H__ */
